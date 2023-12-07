@@ -58,6 +58,5 @@ Contributions to this project are welcome. Please ensure to follow the coding st
 This project is licensed under the terms of the [MIT License]
 
 ## Contact
-Please feel free to contact me if you have any questions or suggestions.
-Mohammad Solouki - mohamad.solouki@gmail.com
-```
+- Please feel free to contact me if you have any questions or suggestions
+- Mohammadsadegh Solouki - mohamad.solouki@gmail.com
