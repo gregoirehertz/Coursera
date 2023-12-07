@@ -5,6 +5,7 @@ from sklearn.metrics import classification_report
 import joblib
 import os
 
+
 def train_model(data_path, model_save_path):
     """
     Train a fraud detection model.
@@ -31,11 +32,12 @@ def train_model(data_path, model_save_path):
     # Save the trained model
     joblib.dump(model, model_save_path)
 
+
 # Example usage
 if __name__ == "__main__":
     data_dir = 'data/simulated_data'
     model_dir = 'model/saved_models'
-    
+
     # Train and save a model for each month's simulated data
     for file in os.listdir(data_dir):
         if file.endswith('.csv'):
