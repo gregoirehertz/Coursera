@@ -55,7 +55,7 @@ This project implements a machine learning-based fraud detection system designed
 Contributions to this project are welcome. Please ensure to follow the coding standards and write tests for new features.
 
 ## License
-This project is licensed under the terms of the [MIT License]
+This project is licensed under the terms of the MIT License
 
 ## Contact
 - Please feel free to contact me if you have any questions or suggestions
