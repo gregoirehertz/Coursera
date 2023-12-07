@@ -18,7 +18,7 @@ This project implements a fraud detection system using machine learning. The sys
 ## Setup and Installation
 1. Clone the repository:
    ```
-   git clone [repository-url]
+   git clone https://github.com/mohamadsolouki/MLOps
    ```
 2. Install required packages:
    ```
@@ -39,8 +39,8 @@ This project implements a fraud detection system using machine learning. The sys
 Contributions to this project are welcome. Please ensure to follow the coding standards and write tests for new features.
 
 ## License
-[Specify the license here]
+This project is licensed under the terms of the MIT license.
 
 ## Contact
-[Your Contact Information]
+Mohamad Solouki - mohamad.solouki@gmail.com
 ```
