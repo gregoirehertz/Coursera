@@ -22,9 +22,19 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Cache Python Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
+      - name: Run Tests
+        run: pytest
 
   docker-build-and-push:
     needs: build
@@ -43,10 +53,14 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Scan Docker Image
+        run: docker scan ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
   deploy:
     needs: docker-build-and-push
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: 'Deploy to Azure Web App'
@@ -54,9 +68,7 @@ jobs:
         with:
           app-name: 'mlopsfraud'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
-
-
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
 
   notify:
     needs: [build, docker-build-and-push, deploy]
@@ -65,4 +77,4 @@ jobs:
     steps:
       - name: Send Notification
         run: |
-          echo "Workflow completed"
+          echo "Workflow completed for version ${{ github.sha }}"
