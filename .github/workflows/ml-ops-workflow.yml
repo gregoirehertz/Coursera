@@ -1,35 +1,53 @@
 name: ML Ops Workflow
 
 on:
-  schedule:
-    - cron: '0 0 1 * *'  # Run at the start of every month
   push:
-    paths:
-      - 'data/**'  # Run if there are changes in the data directory
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  train-model:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Train Model
-        run: python /model/train_model.py
-      - name: Log Model with MLflow
-        run: python /mlflow/mlflow_tracking.py
 
-  deploy-model:
-    needs: train-model
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: python -m unittest discover -s tests
+
+  docker-build-and-push:
+    needs: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Deploy Model
-        run: python /api/deploy_model.py
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: user/app-name:latest
+
+  deploy:
+    needs: docker-build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Production
+        run: echo "Deploying to production"
+
+  notify:
+    needs: [build-and-test, docker-build-and-push, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification
+        run: echo "Workflow completed"
