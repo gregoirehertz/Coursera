@@ -1,7 +1,6 @@
-# Fraud Detection System
+# Fraud Detection Application
 
-## Project Overview
-This project implements a machine learning-based fraud detection system designed to automatically detect fraudulent activities in financial transactions. The system is adaptable, allowing for regular retraining to adjust to new data patterns.
+This repository contains a machine learning application for fraud detection. It uses a RandomForest classifier to predict fraudulent activities and is built with Flask, deployed using Docker, and orchestrated with GitHub Actions for CI/CD. MLflow is used for model tracking and management.
 
 ## Key Features
 - Automated detection of potential fraud in financial transactions.
@@ -10,27 +9,79 @@ This project implements a machine learning-based fraud detection system designed
 - MLflow integration for model performance monitoring.
 - Automated workflow using GitHub Actions for model retraining and deployment.
 
-## Repository Structure
-- `/data`: Original and simulated datasets.
-- `/model`: Training and evaluation scripts for the machine learning model.
-- `/api`: Flask application for the RESTful API.
-- `/mlflow`: MLflow tracking and monitoring.
-- `/.github/workflows`: GitHub Actions workflows for automation.
-- `/scripts`: Additional scripts for data drift detection and monitoring.
-- `/docs`: Documentation related to the project.
-- `/reports`: Generated reports on model evaluation and data drift analysis.
-- `config.py`: Centralized configuration settings.
-- `requirements.txt`: List of Python package dependencies.
+## Prerequisites
 
-## Setup and Installation
-1. **Clone the repository**:
+Before you begin, ensure you have met the following requirements:
+- Python 3.8 or higher
+- Docker installed
+- Access to a terminal/command line interface
+- GitHub account (for CI/CD using GitHub Actions)
+- Azure account (if deploying to Azure Web App)
+
+## Installation
+
+To install the Fraud Detection Application, follow these steps:
+
+1. Clone the repository:
    ```
-   git clone https://github.com/mohamadsolouki/MLOps
+   git clone [repository-url]
    ```
-2. **Install dependencies**:
+
+2. Navigate to the cloned directory:
+   ```
+   cd [local-repository]
+   ```
+
+3. (Optional) Create and activate a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+4. Install required packages:
    ```
    pip install -r requirements.txt
    ```
+
+## Configuration
+
+Set the following environment variables:
+- `DATA_PATH`: Path to your dataset.
+- `MODEL_SAVE_PATH`: Path to save the trained model.
+- `SERVER_UPLOAD_URL`: URL to upload the model.
+- `SERVER_RELOAD_URL`: URL to notify server for model reload.
+
+## Training the Model
+
+To train the model, run:
+
+```
+python train_model.py
+```
+
+This script will train the model and save it to the specified path.
+
+## Evaluating the Model
+
+To evaluate the trained model, run:
+
+```
+python model_evaluation.py
+```
+
+This will load the test data and the trained model, then output evaluation metrics.
+
+## Running the Application Locally
+
+To run the application locally:
+
+1. Start the Flask app:
+   ```
+   python app.py
+   ```
+
+2. The application will be available at `http://127.0.0.1:5001/`.
+
 
 ## Running the Application
 1. **Train the model**:
@@ -50,13 +101,43 @@ This project implements a machine learning-based fraud detection system designed
    curl -X POST -H "Content-Type: application/json" -d "{\"Time\": 119907, \"V1\": -0.611712, \"V2\": -0.769705, \"V3\": -0.149759, \"V4\": -0.224877, \"V5\": 2.028577, \"V6\": -2.019887, \"V7\": 0.292491, \"V8\": -0.523020, \"V9\": 0.358468, \"V10\": -0.507582, \"V11\": -1.205419, \"V12\": 0.564061, \"V13\": -0.190509, \"V14\": 0.191617, \"V15\": 0.301595, \"V16\": -0.408111, \"V17\": 0.299503, \"V18\": -0.209950, \"V19\": 0.770147, \"V20\": 0.202402, \"V21\": -0.075208, \"V22\": 0.045536, \"V23\": 0.380739, \"V24\": 0.023440, \"V25\": -2.220686, \"V26\": -0.201146, \"V27\": 0.066501, \"V28\": 0.221180, \"Amount\": 1.79}" http://127.0.0.1:5001/predict
    ```
 
-## Monitoring and Updates
-- **MLflow UI**: Run `mlflow ui` and access at `http://127.0.0.1:5000`.
-- **Automated Retraining**: GitHub Actions workflow re-trains and deploys the model regularly or upon data updates.
-- **Data Drift Monitoring**: GitHub Actions workflow runs data drift analysis and generates reports regularly or upon data updates.
 
-## Contributing
-Contributions to this project are welcome. Please ensure to follow the coding standards and write tests for new features.
+## Deploying with Docker
+
+To deploy the application using Docker:
+
+1. Build the Docker image:
+   ```
+   docker build -t fraud-detector .
+   ```
+
+2. Run the Docker container:
+   ```
+   docker run -p 80:80 fraud-detector
+   ```
+
+The application will be available at `http://localhost`.
+
+## CI/CD with GitHub Actions
+
+The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions workflow for continuous integration and deployment. Pushing changes to the main branch will trigger the workflow.
+
+## Using MLflow for Model Tracking
+
+To track models using MLflow, ensure MLflow server is running and accessible. The training and evaluation scripts are set up to log metrics and parameters to MLflow.
+
+## Contributing to the Fraud Detection Application
+
+To contribute, follow these steps:
+
+1. Fork this repository.
+2. Create a branch: `git checkout -b <branch_name>`.
+3. Make your changes and commit: `git commit -m '<commit_message>'`.
+4. Push to the original branch: `git push origin <project_name>/<location>`.
+5. Create the pull request.
+
+Alternatively, see the GitHub documentation on [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
+
 
 ## License
 This project is licensed under the terms of the MIT License
