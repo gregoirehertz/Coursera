@@ -1,29 +1,21 @@
-name: MLOps Workflow
+name: Build and Deploy Docker Image to Azure Web App
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: frauddetector
+  REGISTRY: docker.io
+  REGISTRY_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  AZURE_WEBAPP_NAME: frauddetector
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CAE84828B8204D6D87D5123E30441483 }}
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-
-  docker-build-and-push:
-    needs: build-and-test
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -32,32 +24,28 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: mohamadolouki/frauddetector:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
   deploy:
-    needs: docker-build-and-push
     runs-on: ubuntu-latest
+    needs: build-and-push
     steps:
-      - name: Deploy to Production
-        run: |
-          # Add deployment commands here
-          echo "Deploying to production (placeholder)"
+      - name: 'Login to Azure'
+        uses: azure/login@v1
+        with:
+          creds: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
-  notify:
-    needs: [build-and-test, docker-build-and-push, deploy]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Send Notification
-        run: |
-          # Add notification commands here
-          echo "Workflow completed"
-          
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: 'Production'
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
