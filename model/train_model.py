@@ -73,21 +73,24 @@ def save_model(model, model_save_path):
 
 if __name__ == '__main__':
     mlflow.set_experiment("fraud_detection")
+    # Add logic to check if re-training is needed
+    retrain_flag = os.getenv('RETRAIN_MODEL', 'False')
+    if retrain_flag.lower() == 'true':
+        logging.info("Retraining model...")
+        data_path = os.getenv('DATA_PATH', 'data/creditcard.csv')
+        model_save_path = os.getenv('MODEL_SAVE_PATH', 'model/saved_models/model.pkl')
+        param_grid = {'n_estimators': [100, 200], 'max_depth': [10, 20]}
 
-    data_path = os.getenv('DATA_PATH', 'data/creditcard.csv')
-    model_save_path = os.getenv('MODEL_SAVE_PATH', 'model/saved_models/model.pkl')
-    param_grid = {'n_estimators': [100, 200], 'max_depth': [10, 20]}
+        with mlflow.start_run():
+            data = load_data(data_path)
+            X, y = preprocess_data(data)
+            model = train_model(X, y, param_grid)
+            X_test, y_test = joblib.load('data/test_data.pkl')
 
-    with mlflow.start_run():
-        data = load_data(data_path)
-        X, y = preprocess_data(data)
-        model = train_model(X, y, param_grid)
-        X_test, y_test = joblib.load('data/test_data.pkl')
+            # Log model and parameters
+            mlflow.log_params(param_grid)
+            mlflow.log_metric("accuracy", accuracy_score(y_test, model.predict(X_test)))
+            mlflow.log_metric("roc_auc", roc_auc_score(y_test, model.predict_proba(X_test)[:, 1]))
+            log_model(model, "model")
 
-        # Log model and parameters
-        mlflow.log_params(param_grid)
-        mlflow.log_metric("accuracy", accuracy_score(y_test, model.predict(X_test)))
-        mlflow.log_metric("roc_auc", roc_auc_score(y_test, model.predict_proba(X_test)[:, 1]))
-        log_model(model, "model")
-
-        save_model(model, model_save_path)
+            save_model(model, model_save_path)

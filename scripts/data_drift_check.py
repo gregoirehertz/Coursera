@@ -1,27 +1,47 @@
 import pandas as pd
-from sklearn.metrics import mean_absolute_error
+import json
+from evidently.dashboard import Dashboard
+from evidently.dashboard.tabs import DataDriftTab
 
 
-def check_data_drift(original_data_path, new_data_path):
+def detect_data_drift(reference_data_path, current_data_path, report_path):
     """
-    Check for data drift between the original dataset and new data.
+    Detects data drift by comparing reference data with current data.
+
     Args:
-    - original_data_path: Path to the original dataset.
-    - new_data_path: Path to the new dataset.
+        reference_data_path (str): Path to the reference dataset (original training data).
+        current_data_path (str): Path to the current dataset to be compared.
+        report_path (str): Path to save the data drift report.
+
+    Returns:
+        bool: True if data drift is detected, False otherwise.
     """
-    original_data = pd.read_csv(original_data_path)
-    new_data = pd.read_csv(new_data_path)
+    # Load datasets
+    reference_data = pd.read_csv(reference_data_path)
+    current_data = pd.read_csv(current_data_path)
 
-    # Simple drift check based on mean absolute error
-    mae = mean_absolute_error(original_data, new_data)
-    print(f"Mean Absolute Error (Drift Indicator): {mae}")
-    return mae > 0.01  # Threshold for drift
+    # Create a data drift report
+    data_drift_dashboard = Dashboard(tabs=[DataDriftTab()])
+    data_drift_dashboard.calculate(reference_data, current_data)
+
+    # Save the report
+    report = data_drift_dashboard.save(output_file=report_path)
+
+    # Analyzing the report to detect drift
+    with open(report_path) as f:
+        report_json = json.load(f)
+        is_drift_found = report_json['data_drift']['data']['metrics']['dataset_drift']
+
+    return is_drift_found
 
 
-# Example usage
 if __name__ == "__main__":
-    drift_detected = check_data_drift('data/creditcard.csv', 'data/simulated_data/simulated_data_1.csv')
+    drift_detected = detect_data_drift(
+        'data/creditcard.csv',
+        'data/simulated_data/modified_data_month_12.csv',
+        'data_drift_report.html'
+    )
     if drift_detected:
         print("Data drift detected.")
     else:
-        print("No significant drift detected.")
+        print("No significant data drift found.")

@@ -3,8 +3,9 @@ name: MLOps Workflow
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  schedule:
+    - cron: '0 0 1 * *'  # At 00:00 on the first day of every month
+
 
 env:
   IMAGE_NAME: frauddetector
@@ -32,6 +33,14 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Check for Data Drift
+        run: python data_drift_check.py
+
+      - name: Re-train Model if Drift Detected
+        run: python train_model.py
+        env:
+          RETRAIN_MODEL: 'True'
 
 
   docker-build-and-push:
