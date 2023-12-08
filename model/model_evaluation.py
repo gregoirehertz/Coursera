@@ -1,39 +1,41 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
 import joblib
 import logging
 import sys
+import os
+import mlflow
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def load_data(data_path):
+def load_test_data(test_data_path):
+    """
+    Load test data from a given path.
+    """
     try:
-        data = pd.read_csv(data_path)
-        logging.info(f"Data loaded successfully from {data_path}")
-        return data
+        X_test, y_test = joblib.load(test_data_path)
+        logging.info(f"Test data loaded successfully from {test_data_path}")
+        return X_test, y_test
     except Exception as e:
-        logging.error(f"Error loading data: {e}")
+        logging.error(f"Error loading test data: {e}")
         sys.exit(1)
 
 
-def preprocess_data(data):
-    X = data.drop('class', axis=1)
-    y = data['class']
-    return X, y
-
-
 def evaluate_model(model_path, X_test, y_test):
+    """
+    Evaluate the model and return metrics.
+    """
     try:
         model = joblib.load(model_path)
         y_pred = model.predict(X_test)
+        y_pred_proba = model.predict_proba(X_test)[:, 1]
 
         # Compute metrics
         metrics = {
             'accuracy': accuracy_score(y_test, y_pred),
-            'roc_auc': roc_auc_score(y_test, y_pred),
+            'roc_auc': roc_auc_score(y_test, y_pred_proba),
             'classification_report': classification_report(y_test, y_pred)
         }
 
@@ -45,10 +47,18 @@ def evaluate_model(model_path, X_test, y_test):
 
 
 if __name__ == "__main__":
-    data_path = 'data/creditcard.csv'
-    model_path = 'model/saved_models/model.pkl'
+    mlflow.set_experiment("fraud_detection_evaluation")
 
-    data = load_data(data_path)
-    X, y = preprocess_data(data)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    evaluate_model(model_path, X_test, y_test)
+    test_data_path = os.getenv('TEST_DATA_PATH', 'data/test_data.pkl')
+    model_path = os.getenv('MODEL_PATH', 'model/saved_models/model.pkl')
+
+    with mlflow.start_run():
+        X_test, y_test = load_test_data(test_data_path)
+        metrics = evaluate_model(model_path, X_test, y_test)
+
+        if metrics:
+            for key, value in metrics.items():
+                if key != 'classification_report':
+                    mlflow.log_metric(key, value)
+
+            logging.info(metrics['classification_report'])
