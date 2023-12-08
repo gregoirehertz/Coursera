@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
+
 def check_data_drift(original_data_path, new_data_path):
     """
     Check for data drift between the original dataset and new data.
@@ -15,6 +16,7 @@ def check_data_drift(original_data_path, new_data_path):
     mae = mean_absolute_error(original_data, new_data)
     print(f"Mean Absolute Error (Drift Indicator): {mae}")
     return mae > 0.01  # Threshold for drift
+
 
 # Example usage
 if __name__ == "__main__":
