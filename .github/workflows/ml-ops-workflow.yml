@@ -28,7 +28,7 @@ jobs:
 
 
   docker-build-and-push:
-    needs: build-and-test
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
