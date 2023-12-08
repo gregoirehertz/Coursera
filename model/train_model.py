@@ -26,6 +26,10 @@ def preprocess_data(data):
     return X, y
 
 
+def save_data(X, y, path):
+    joblib.dump((X, y), path)
+
+
 def train_model(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     model = RandomForestClassifier(random_state=42)
@@ -44,6 +48,8 @@ def train_model(X, y):
     roc_auc = roc_auc_score(y_test, y_pred)
     logging.info(f"Model Accuracy: {accuracy}, ROC-AUC: {roc_auc}")
 
+    save_data(X_test, y_test, 'model/saved_models/Xy_test.pkl')
+
     return best_model
 
 
@@ -53,6 +59,9 @@ def save_model(model, model_save_path):
         logging.info(f"Model saved to {model_save_path}")
     except Exception as e:
         logging.error(f"Error saving model: {e}")
+
+
+# Inside the train_model function, add after the train/test split:
 
 
 if __name__ == '__main__':

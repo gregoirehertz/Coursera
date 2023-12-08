@@ -29,21 +29,26 @@ def evaluate_model(model_path, X_test, y_test):
     try:
         model = joblib.load(model_path)
         y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        roc_auc = roc_auc_score(y_test, y_pred)
-        report = classification_report(y_test, y_pred)
-        logging.info(f"Model Evaluation Report:\n{report}")
-        logging.info(f"Model Accuracy: {accuracy}, ROC-AUC: {roc_auc}")
+
+        # Compute metrics
+        metrics = {
+            'accuracy': accuracy_score(y_test, y_pred),
+            'roc_auc': roc_auc_score(y_test, y_pred),
+            'classification_report': classification_report(y_test, y_pred)
+        }
+
+        logging.info("Model evaluation completed.")
+        return metrics
     except Exception as e:
         logging.error(f"Error in model evaluation: {e}")
-        sys.exit(1)
+        return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     data_path = 'data/creditcard.csv'
     model_path = 'model/saved_models/model.pkl'
 
     data = load_data(data_path)
     X, y = preprocess_data(data)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     evaluate_model(model_path, X_test, y_test)
