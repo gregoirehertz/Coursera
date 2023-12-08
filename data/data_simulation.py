@@ -24,6 +24,6 @@ def simulate_data_drift(original_data, month_offset):
 # Usage
 if __name__ == "__main__":
     original_data = pd.read_csv('data/creditcard.csv')
-    month = 1  # Simulate data for the 1st month
+    month = 2  # Simulate data for the 1st month
     modified_data = simulate_data_drift(original_data, month)
     modified_data.to_csv(f'data/simulated_data/simulated_data_{month}.csv', index=False)
