@@ -1,6 +1,7 @@
 import os
 import requests
 
+
 def upload_model_to_server(model_path, server_url):
     """
     Upload the model to the server or cloud storage.
@@ -12,6 +13,7 @@ def upload_model_to_server(model_path, server_url):
     response = requests.post(server_url, files=files)
     return response
 
+
 def notify_server_to_reload_model(notification_url):
     """
     Notify the server to reload the model.
@@ -21,11 +23,12 @@ def notify_server_to_reload_model(notification_url):
     response = requests.post(notification_url)
     return response
 
+
 # Example usage
 if __name__ == "__main__":
-    latest_model_path = 'model/saved_models/latest_model.pkl'
-    server_upload_url = 'http://yourserver.com/upload_model'
-    server_reload_url = 'http://yourserver.com/reload_model'
+    latest_model_path = 'model/saved_models/model_1.pkl'
+    server_upload_url = 'http://127.0.0.1:5000/upload_model'
+    server_reload_url = 'http://127.0.0.1:5000/reload_model'
 
     # Upload the model
     upload_response = upload_model_to_server(latest_model_path, server_upload_url)
