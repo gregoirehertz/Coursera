@@ -1,41 +1,29 @@
-# Stage 1: Build
-FROM python:3.8-alpine as builder
+# Use a more general Python base image
+FROM python:3.8
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache build-base
+# Install build dependencies for Python packages (if needed)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt and install dependencies
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Copy just the requirements.txt first to leverage Docker cache
+COPY requirements.txt /app/
 
-# Copy the rest of the codebase
-COPY . .
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Stage 2: Final Image
-FROM python:3.8-alpine
+# Copy the rest of the application code
+COPY . /app
 
-WORKDIR /app
-
-# Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
-COPY --from=builder /app /app
-
-# Set non-root user
-RUN adduser -D appuser
-USER appuser
-
-# Environment variables
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=80
-
-# Expose port for the Flask app
+# Expose the port the app runs on
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "python", "-c", "import requests; requests.get('http://localhost')" ]
+# Define environment variable
+ENV NAME Fraud
 
-# Run the Flask app
-CMD ["flask", "run"]
+# Run app.py when the container launches
+CMD ["python", "app.py"]
