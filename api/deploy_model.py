@@ -26,7 +26,7 @@ def notify_server_to_reload_model(notification_url):
 
 # Example usage
 if __name__ == "__main__":
-    latest_model_path = 'model/saved_models/model_1.pkl'
+    latest_model_path = 'model/saved_models/model.pkl'
     server_upload_url = 'http://127.0.0.1:5000/upload_model'
     server_reload_url = 'http://127.0.0.1:5000/reload_model'
 
