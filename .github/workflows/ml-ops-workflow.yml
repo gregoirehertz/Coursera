@@ -9,7 +9,6 @@ on:
 env:
   IMAGE_NAME: frauddetector
   REGISTRY: mohamadolouki
-  AZURE_WEBAPP_NAME: mlopsfraud
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
 jobs:
@@ -50,17 +49,18 @@ jobs:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: 'Login to Azure'
-        uses: azure/login@v1
+      - name: 'Download artifact from build job'
+        uses: actions/download-artifact@v3
         with:
-          creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          name: python-app
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'Production'
-          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
+          app-name: 'mlopsfraud'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: './'
+
 
   notify:
     needs: [build, docker-build-and-push, deploy]
