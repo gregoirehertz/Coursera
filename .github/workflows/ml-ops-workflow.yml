@@ -63,7 +63,7 @@ jobs:
           images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
 
   notify:
-    needs: [build-and-test, docker-build-and-push, deploy]
+    needs: [build, docker-build-and-push, deploy]
     runs-on: ubuntu-latest
     if: always()
     steps:
