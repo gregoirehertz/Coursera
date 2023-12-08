@@ -10,6 +10,7 @@ model_files = sorted([f for f in os.listdir('model/saved_models') if f.endswith(
 latest_model_file = model_files[-1]
 model = joblib.load(f'model/saved_models/{latest_model_file}')
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -19,6 +20,7 @@ def predict():
         return jsonify({'probability': prediction})
     except Exception as e:
         return jsonify({'error': str(e)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
