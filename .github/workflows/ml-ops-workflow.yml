@@ -6,17 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  IMAGE_NAME: frauddetector
-  REGISTRY: mohamadolouki
-  AZURE_WEBAPP_NAME: frauddetector
-  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CAE84828B8204D6D87D5123E30441483 }}
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -26,13 +21,13 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
   docker-build-and-push:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
@@ -45,23 +40,16 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: mohamadolouki/frauddetector:latest
 
   deploy:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: 'Login to Azure'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          slot-name: 'Production'
-          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
+      - name: Deploy to Production
+        run: |
+          # Add deployment commands here
+          echo "Deploying to production (placeholder)"
 
   notify:
     needs: [build-and-test, docker-build-and-push, deploy]
@@ -70,4 +58,6 @@ jobs:
     steps:
       - name: Send Notification
         run: |
+          # Add notification commands here
           echo "Workflow completed"
+          
