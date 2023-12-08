@@ -49,7 +49,7 @@ jobs:
       - name: Deploy to Production
         run: |
           # Add deployment commands here
-          echo "Deploying to production (placeholder)"
+          echo "Deploying to production"
 
   notify:
     needs: [build-and-test, docker-build-and-push, deploy]
