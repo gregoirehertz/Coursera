@@ -12,7 +12,6 @@ from mlflow.sklearn import log_model
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 def load_data(data_path):
     """
     Load data from a given path.
@@ -25,21 +24,27 @@ def load_data(data_path):
         logging.error(f"Error loading data: {e}")
         sys.exit(1)
 
-
 def preprocess_data(data):
     """
     Preprocess the data, returning features and labels.
     """
-    # Example preprocessing step
-    # data.fillna(0, inplace=True)
     X = data.drop('class', axis=1)
     y = data['class']
     return X, y
 
+def save_data(X, y, path):
+    """
+    Save data to a given path.
+    """
+    try:
+        joblib.dump((X, y), path)
+        logging.info(f"Data saved to {path}")
+    except Exception as e:
+        logging.error(f"Error saving data: {e}")
 
 def train_model(X, y, param_grid, test_size=0.3):
     """
-    Train the model with GridSearchCV.
+    Train the model with GridSearchCV and save the test set.
     """
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
     model = RandomForestClassifier(random_state=42)
@@ -50,13 +55,10 @@ def train_model(X, y, param_grid, test_size=0.3):
     best_model = grid_search.best_estimator_
     logging.info(f"Best model parameters: {grid_search.best_params_}")
 
-    y_pred = best_model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    roc_auc = roc_auc_score(y_test, y_pred)
-    logging.info(f"Model Accuracy: {accuracy}, ROC-AUC: {roc_auc}")
+    # Save the test set for consistent evaluation
+    save_data(X_test, y_test, 'data/test_data.pkl')
 
-    return best_model, X_test, y_test
-
+    return best_model
 
 def save_model(model, model_save_path):
     """
