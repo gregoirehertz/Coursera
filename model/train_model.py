@@ -81,7 +81,8 @@ if __name__ == '__main__':
     with mlflow.start_run():
         data = load_data(data_path)
         X, y = preprocess_data(data)
-        model, X_test, y_test = train_model(X, y, param_grid)
+        model = train_model(X, y, param_grid)
+        X_test, y_test = joblib.load('data/test_data.pkl')
 
         # Log model and parameters
         mlflow.log_params(param_grid)
