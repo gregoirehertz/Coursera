@@ -49,17 +49,13 @@ jobs:
     needs: docker-build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download artifact from build job'
-        uses: actions/download-artifact@v3
-        with:
-          name: python-app
-
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'mlopsfraud'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: './'
+          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest'
+
 
 
   notify:
