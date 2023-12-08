@@ -35,10 +35,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Check for Data Drift
-        run: python data_drift_check.py
+        run: python scripts/data_drift_check.py
 
       - name: Re-train Model if Drift Detected
-        run: python train_model.py
+        run: python model/train_model.py
         env:
           RETRAIN_MODEL: 'True'
 
