@@ -2,7 +2,7 @@
 FROM python:3.8
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /api
 
 # Install build dependencies for Python packages
 RUN apt-get update && apt-get install -y \
@@ -17,7 +17,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
-COPY . /app
+COPY . /api
 
 # Expose the port the app runs on
 EXPOSE 5001
@@ -26,4 +26,4 @@ EXPOSE 5001
 ENV NAME Fraud
 
 # Run app.py when the container launches
-CMD ["python", "api/app.py"]
+CMD ["python", "app.py"]
