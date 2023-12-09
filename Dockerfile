@@ -1,29 +1,21 @@
-# Use a more general Python base image
-FROM python:3.8
+# Use an official Python runtime as a base image
+FROM python:3.8-slim
 
 # Set the working directory in the container
-WORKDIR /api
+WORKDIR /app
 
-# Install build dependencies for Python packages
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Copy just the requirements.txt first to leverage Docker cache
-COPY requirements.txt /app/
-
-# Install Python dependencies
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY . /api
-
-# Expose the port the app runs on
+# Make the container’s port 80 available to the outside world
 EXPOSE 5001
 
 # Define environment variable
-ENV NAME Fraud
+ENV NAME fraud
 
 # Run app.py when the container launches
-CMD ["python", "app.py"]
+CMD ["python", "./api/app.py"]
+
