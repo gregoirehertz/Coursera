@@ -11,7 +11,7 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
 MODEL_DIR = os.getenv('MODEL_DIR', 'model/saved_models')
-SERVER_PORT = os.getenv('PORT', 80)
+SERVER_PORT = os.getenv('PORT', 5001)
 DEBUG_MODE = os.getenv('DEBUG', 'False') == 'True'
 
 

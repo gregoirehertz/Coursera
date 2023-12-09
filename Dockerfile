@@ -20,10 +20,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Expose the port the app runs on
-EXPOSE 80
+EXPOSE 5001
 
 # Define environment variable
 ENV NAME Fraud
 
 # Run app.py when the container launches
-CMD ["python", "app/app.py"]
+CMD ["python", "api/app.py"]
