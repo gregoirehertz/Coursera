@@ -26,5 +26,4 @@ EXPOSE 5000
 ENV NAME Fraud
 
 # Run app.py when the container launches
-CMD cd /app
-CMD ["python", "app.py"]
+CMD ["python", "app/app.py"]
