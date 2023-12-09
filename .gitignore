@@ -152,4 +152,14 @@ cython_debug/
 .idea/
 mlruns/
 
-data/simulated_data
+modified_data_month_2.csv
+modified_data_month_3.csv
+modified_data_month_4.csv
+modified_data_month_5.csv
+modified_data_month_6.csv
+modified_data_month_7.csv
+modified_data_month_8.csv
+modified_data_month_9.csv
+modified_data_month_10.csv
+modified_data_month_11.csv
+modified_data_month_12.csv

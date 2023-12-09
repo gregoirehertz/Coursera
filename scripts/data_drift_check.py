@@ -38,7 +38,7 @@ def detect_data_drift(reference_data_path, current_data_path, report_path):
 if __name__ == "__main__":
     drift_detected = detect_data_drift(
         'data/creditcard.csv',
-        'data/simulated_data/modified_data_month_12.csv',
+        'data/simulated_data/modified_data_month_1.csv',
         'data_drift_report.html'
     )
     if drift_detected:

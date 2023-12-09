@@ -23,7 +23,7 @@ def modify_data(df, month):
 
 def simulate_monthly_data(input_file, output_dir, num_months=12):
     """
-    Simulates monthly data drift.
+    Simulates monthly data drift. Take a sample dataset and modify it to simulate data drift.
 
     Args:
         input_file (str): Path to the original dataset.
@@ -31,6 +31,8 @@ def simulate_monthly_data(input_file, output_dir, num_months=12):
         num_months (int): Number of months to simulate.
     """
     original_data = pd.read_csv(input_file)
+    # take a sample of the original data
+    original_data = original_data.sample(frac=0.2, random_state=42)
 
     for month in range(1, num_months + 1):
         modified_data = modify_data(original_data.copy(), month)
