@@ -11,7 +11,7 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make the container’s port 80 available to the outside world
-EXPOSE 5001
+EXPOSE 8000
 
 # Define environment variable
 ENV NAME fraud
