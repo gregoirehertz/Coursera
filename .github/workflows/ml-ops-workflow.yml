@@ -6,11 +6,9 @@ on:
   schedule:
     - cron: '0 0 1 * *'  # At 00:00 on the first day of every month
 
-
 env:
   IMAGE_NAME: frauddetector
   REGISTRY: mohamadolouki
-  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
 jobs:
   build:
@@ -34,15 +32,6 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      # - name: Check for Data Drift
-      #   run: python scripts/data_drift_check.py
-
-      # - name: Re-train Model if Drift Detected
-      #   run: python model/train_model.py
-      #   env:
-      #     RETRAIN_MODEL: 'True'
-
-
   docker-build-and-push:
     needs: build
     runs-on: ubuntu-latest
@@ -62,18 +51,22 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-
   deploy:
     needs: docker-build-and-push
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted 
     steps:
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
+      - name: SSH and Deploy Docker Container
+        uses: appleboy/ssh-action@master
         with:
-          app-name: 'mlopsfraud'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 80:8000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
   notify:
     needs: [build, docker-build-and-push, deploy]

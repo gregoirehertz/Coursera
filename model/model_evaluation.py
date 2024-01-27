@@ -4,7 +4,9 @@ import logging
 import sys
 import os
 import mlflow
-from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -38,6 +40,17 @@ def evaluate_model(model_path, X_test, y_test):
             'roc_auc': roc_auc_score(y_test, y_pred_proba),
             'classification_report': classification_report(y_test, y_pred)
         }
+
+        # Plot and save confusion matrix
+        cm = confusion_matrix(y_test, y_pred)
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='g')
+        plt.title('Confusion Matrix')
+        plt.ylabel('Actual label')
+        plt.xlabel('Predicted label')
+        confusion_matrix_path = "confusion_matrix.png"
+        plt.savefig(confusion_matrix_path)
+        mlflow.log_artifact(confusion_matrix_path)
 
         logging.info("Model evaluation completed.")
         return metrics
