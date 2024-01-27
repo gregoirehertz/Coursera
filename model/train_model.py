@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def load_data(data_path):
     """
     Load data from a given path.
@@ -25,6 +26,7 @@ def load_data(data_path):
     except Exception as e:
         logging.error(f"Error loading data: {e}")
         sys.exit(1)
+
 
 def preprocess_data(data):
     """
@@ -39,6 +41,7 @@ def preprocess_data(data):
 
     return X_scaled, y
 
+
 def balance_data(X, y):
     """
     Balance the dataset using SMOTE.
@@ -46,6 +49,7 @@ def balance_data(X, y):
     smote = SMOTE()
     X_balanced, y_balanced = smote.fit_resample(X, y)
     return X_balanced, y_balanced
+
 
 def train_model(X, y, test_size=0.3, balance=False):
     """
@@ -61,6 +65,7 @@ def train_model(X, y, test_size=0.3, balance=False):
 
     return model, X_test, y_test
 
+
 def save_model(model, model_save_path):
     """
     Save the model to a given path.
@@ -71,9 +76,10 @@ def save_model(model, model_save_path):
     except Exception as e:
         logging.error(f"Error saving model: {e}")
 
+
 if __name__ == '__main__':
     mlflow.set_experiment("fraud_detection")
-    
+
     retrain_flag = os.getenv('RETRAIN_MODEL', 'False')
     if retrain_flag.lower() == 'true':
         logging.info("Retraining model...")
