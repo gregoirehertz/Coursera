@@ -3,19 +3,18 @@ import joblib
 import pandas as pd
 import os
 import logging
-import requests
 
 app = Flask(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-MODEL_DIR = os.getenv('MODEL_DIR', 'model/saved_models')
+# Environment variables and default values
+MODEL_DIR = os.getenv('MODEL_DIR', '/app/model/saved_models')
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
 model = None
-
 
 def load_model():
     """Function to load the latest trained model."""
@@ -33,12 +32,10 @@ def load_model():
         logging.error(f"Error loading model: {e}")
         raise e
 
-
 @app.before_first_request
 def load_model_on_startup():
     """Load the model before the first request."""
     load_model()
-
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -58,7 +55,6 @@ def predict():
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/upload_model', methods=['POST'])
 def upload_model():
     """Endpoint to upload a model to the server."""
@@ -71,7 +67,6 @@ def upload_model():
     logging.info(f"Model {file.filename} uploaded successfully.")
     return jsonify({'message': 'Model uploaded successfully'}), 200
 
-
 @app.route('/reload_model', methods=['POST'])
 def reload_model():
     """Endpoint to reload the latest model."""
@@ -82,7 +77,6 @@ def reload_model():
         logging.error(f"Model reload error: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/')
 def home():
     """Home endpoint providing welcome message and usage information."""
@@ -92,7 +86,6 @@ def home():
     Use /upload_model to upload new models.<br>
     Use /reload_model to reload the latest model.
     '''
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=DEBUG_MODE, port=int(SERVER_PORT))
