@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 import os
 import logging
+import requests
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
 model = None
+
 
 def load_model():
     """Function to load the latest trained model."""
@@ -31,10 +33,12 @@ def load_model():
         logging.error(f"Error loading model: {e}")
         raise e
 
+
 @app.before_first_request
 def load_model_on_startup():
     """Load the model before the first request."""
     load_model()
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -54,10 +58,41 @@ def predict():
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/upload_model', methods=['POST'])
+def upload_model():
+    """Endpoint to upload a model to the server."""
+    file = request.files['file']
+    if not file:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file_path = os.path.join(MODEL_DIR, file.filename)
+    file.save(file_path)
+    logging.info(f"Model {file.filename} uploaded successfully.")
+    return jsonify({'message': 'Model uploaded successfully'}), 200
+
+
+@app.route('/reload_model', methods=['POST'])
+def reload_model():
+    """Endpoint to reload the latest model."""
+    try:
+        load_model()
+        return jsonify({'message': 'Model reloaded successfully'}), 200
+    except Exception as e:
+        logging.error(f"Model reload error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/')
 def home():
-    """Home endpoint providing welcome message."""
-    return "Welcome to the Fraud Detection API!"
+    """Home endpoint providing welcome message and usage information."""
+    return '''
+    Welcome to the Fraud Detection API!<br>
+    Use /predict to make predictions.<br>
+    Use /upload_model to upload new models.<br>
+    Use /reload_model to reload the latest model.
+    '''
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=DEBUG_MODE, port=int(SERVER_PORT))
