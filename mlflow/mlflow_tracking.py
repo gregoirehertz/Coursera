@@ -40,7 +40,7 @@ def log_model_details(model_path, test_data_path, experiment_name, model_name, a
 
             # Log classification report and confusion matrix
             report = classification_report(y_test, y_pred)
-            report_file = "classification_report.txt"
+            report_file = "assets/classification_report.txt"
             with open(report_file, "w") as f:
                 f.write(report)
             mlflow.log_artifact(report_file)
@@ -51,7 +51,7 @@ def log_model_details(model_path, test_data_path, experiment_name, model_name, a
             plt.title('Confusion Matrix')
             plt.ylabel('Actual label')
             plt.xlabel('Predicted label')
-            confusion_matrix_path = "confusion_matrix.png"
+            confusion_matrix_path = "assets/confusion_matrix.png"
             plt.savefig(confusion_matrix_path)
             mlflow.log_artifact(confusion_matrix_path)
 
