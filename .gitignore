@@ -152,6 +152,8 @@ cython_debug/
 .idea/
 mlruns/
 
+data/creditcard.csv
+
 modified_data_month_2.csv
 modified_data_month_3.csv
 modified_data_month_4.csv

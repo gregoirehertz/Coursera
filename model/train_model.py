@@ -31,8 +31,8 @@ def preprocess_data(data):
     """
     Preprocess the data, returning scaled features and labels.
     """
-    X = data.drop('class', axis=1)
-    y = data['class']
+    X = data.drop('Class', axis=1)
+    y = data['Class']
 
     # Feature scaling
     scaler = StandardScaler()
