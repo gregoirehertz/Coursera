@@ -43,20 +43,13 @@ To install the Fraud Detection Application, follow these steps:
    pip install -r requirements.txt
    ```
 
-## Configuration
-
-Set the following environment variables:
-- `DATA_PATH`: Path to your dataset.
-- `MODEL_SAVE_PATH`: Path to save the trained model.
-- `SERVER_UPLOAD_URL`: URL to upload the model.
-- `SERVER_RELOAD_URL`: URL to notify server for model reload.
 
 ## Training the Model
 
 To train the model, run:
 
 ```
-python train_model.py
+python /model/train_model.py
 ```
 
 This script will train the model and save it to the specified path.
@@ -66,7 +59,7 @@ This script will train the model and save it to the specified path.
 To evaluate the trained model, run:
 
 ```
-python model_evaluation.py
+python /model/model_evaluation.py
 ```
 
 This will load the test data and the trained model, then output evaluation metrics.
@@ -77,10 +70,10 @@ To run the application locally:
 
 1. Start the Flask app:
    ```
-   python app.py
+   python /api/app.py
    ```
 
-2. The application will be available at `http://127.0.0.1:5001/`.
+2. The application will be available at `http://127.0.0.1:8000/`.
 
 
 ## Running the Application
@@ -94,7 +87,7 @@ To run the application locally:
    ```
 3. **Send prediction requests** (using tools like `curl` or Postman):
    ```
-   curl -X POST -H "Content-Type: application/json" -d '{"Time": ..., "V1": ..., ...}' http://127.0.0.1:5001/predict
+   curl -X POST -H "Content-Type: application/json" -d '{"Time": ..., "V1": ..., ...}' http://127.0.0.1:8000/predict
    ```
    - Sample request is like:
    ```
@@ -113,10 +106,10 @@ To deploy the application using Docker:
 
 2. Run the Docker container:
    ```
-   docker run -p 80:80 fraud-detector
+   docker run -p 8000:8080 fraud-detector
    ```
 
-The application will be available at `http://localhost`.
+The application will be available at `http://localhost:8080`.
 
 ## CI/CD with GitHub Actions
 
@@ -124,7 +117,7 @@ The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions work
 
 ## Using MLflow for Model Tracking
 
-To track models using MLflow, ensure MLflow server is running and accessible. The training and evaluation scripts are set up to log metrics and parameters to MLflow.
+To track models using MLflow, ensure MLflow server is running and accessible. The training and evaluation scripts are set up to log metrics and parameters to MLflow. 
 
 ## Contributing to the Fraud Detection Application
 

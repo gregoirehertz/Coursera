@@ -44,7 +44,9 @@ def predict():
     try:
         df = pd.DataFrame([data])
         prediction = model.predict_proba(df)[0][1]  # Probability of class 1 (fraud)
-        return jsonify({'probability': prediction})
+        logging.info(f"Prediction: {prediction}")
+        isfraud = prediction > 0.5
+        return jsonify({'probability of being fraud': prediction, 'isfraud': isfraud})
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
