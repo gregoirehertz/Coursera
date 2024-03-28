@@ -118,6 +118,9 @@ The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions work
 ## Using MLflow for Model Tracking
 
 To track models using MLflow, ensure MLflow server is running and accessible. The training and evaluation scripts are set up to log metrics and parameters to MLflow. 
+```
+mlflow ui
+```
 
 ## Contributing to the Fraud Detection Application
 

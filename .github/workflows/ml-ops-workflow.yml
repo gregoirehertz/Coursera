@@ -6,6 +6,7 @@ on:
   schedule:
     - cron: '0 0 1 * *'  # At 00:00 on the first day of every month
 
+
 env:
   IMAGE_NAME: frauddetector
   REGISTRY: mohamadolouki

@@ -55,10 +55,6 @@ def log_model_details(model_path, test_data_path, experiment_name, model_name, a
             plt.savefig(confusion_matrix_path)
             mlflow.log_artifact(confusion_matrix_path)
 
-            # Log feature importances if applicable
-            if hasattr(model, 'feature_importances_'):
-                mlflow.log_dict(dict(zip(X_test.columns, model.feature_importances_)), "feature_importances.json")
-
             # Register model
             run_id = mlflow.active_run().info.run_id
             mlflow.register_model(model_uri=f"runs:/{run_id}/model", name=model_name)

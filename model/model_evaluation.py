@@ -67,6 +67,11 @@ def evaluate_model(model_path, X_test, y_test):
 
         metrics['auprc'] = auprc
 
+        # Log model monitoring metrics
+        mlflow.log_metric("test_accuracy", metrics['accuracy'])
+        mlflow.log_metric("test_roc_auc", metrics['roc_auc'])
+        mlflow.log_artifact("assets/confusion_matrix.png")
+
         logging.info("Model evaluation completed.")
         return metrics
     except Exception as e:

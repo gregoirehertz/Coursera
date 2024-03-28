@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score, average_precision_score
 import joblib
 import logging
 import sys
@@ -12,7 +12,6 @@ from sklearn.preprocessing import StandardScaler
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 def load_data(data_path):
     """
@@ -25,7 +24,6 @@ def load_data(data_path):
     except Exception as e:
         logging.error(f"Error loading data: {e}")
         sys.exit(1)
-
 
 def preprocess_data(data):
     """
@@ -40,7 +38,6 @@ def preprocess_data(data):
 
     return X_scaled, y
 
-
 def train_model(X, y, test_size=0.3):
     """
     Train the model and save the test set.
@@ -52,7 +49,6 @@ def train_model(X, y, test_size=0.3):
 
     return model, X_test, y_test
 
-
 def save_model(model, model_save_path):
     """
     Save the model to a given path.
@@ -62,7 +58,6 @@ def save_model(model, model_save_path):
         logging.info(f"Model saved to {model_save_path}")
     except Exception as e:
         logging.error(f"Error saving model: {e}")
-
 
 if __name__ == '__main__':
     mlflow.set_experiment("fraud_detection")
@@ -80,11 +75,16 @@ if __name__ == '__main__':
         params = model.get_params()
         mlflow.log_params(params)
 
+        # Predict probabilities
+        y_scores = model.predict_proba(X_test)[:, 1]
+        
         # Log metrics
         accuracy = accuracy_score(y_test, model.predict(X_test))
-        roc_auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+        roc_auc = roc_auc_score(y_test, y_scores)
+        auprc = average_precision_score(y_test, y_scores)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("roc_auc", roc_auc)
+        mlflow.log_metric("auprc", auprc)
 
         # Log model
         log_model(model, "model")
@@ -92,4 +92,9 @@ if __name__ == '__main__':
         # Save the model locally as well
         save_model(model, model_save_path)
 
-        logging.info(f"Model training completed with accuracy: {accuracy} and ROC AUC: {roc_auc}")
+        # Save test data
+        test_data_path = 'data/test_data.pkl'
+        joblib.dump((X_test, y_test), test_data_path)
+        mlflow.log_artifact(test_data_path)
+
+        logging.info(f"Model training completed with accuracy: {accuracy}, ROC AUC: {roc_auc}, and AUPRC: {auprc}")
