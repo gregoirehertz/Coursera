@@ -113,7 +113,7 @@ The application will be available at `http://localhost:8080`.
 
 ## CI/CD with GitHub Actions
 
-The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions workflow for continuous integration and deployment. Pushing changes to the main branch will trigger the workflow.
+The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions workflow for continuous integration and deployment. Pushing changes to the main branch will trigger the workflow. Also the workflow is triggered every month to retrain the model.
 
 ## Using MLflow for Model Tracking
 
@@ -121,19 +121,6 @@ To track models using MLflow, ensure MLflow server is running and accessible. Th
 ```
 mlflow ui
 ```
-
-## Contributing to the Fraud Detection Application
-
-To contribute, follow these steps:
-
-1. Fork this repository.
-2. Create a branch: `git checkout -b <branch_name>`.
-3. Make your changes and commit: `git commit -m '<commit_message>'`.
-4. Push to the original branch: `git push origin <project_name>/<location>`.
-5. Create the pull request.
-
-Alternatively, see the GitHub documentation on [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
-
 
 ## License
 This project is licensed under the terms of the MIT License
