@@ -4,7 +4,7 @@ import logging
 import sys
 import os
 import mlflow
-from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, confusion_matrix, precision_recall_curve, auc
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -51,6 +51,21 @@ def evaluate_model(model_path, X_test, y_test):
         confusion_matrix_path = "confusion_matrix.png"
         plt.savefig(confusion_matrix_path)
         mlflow.log_artifact(confusion_matrix_path)
+
+        # Plot and save precision-recall curve
+        precision, recall, _ = precision_recall_curve(y_test, y_pred_proba)
+        auprc = auc(recall, precision)
+        plt.figure()
+        plt.plot(recall, precision, label=f'AUPRC = {auprc:.2f}')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall curve')
+        plt.legend(loc='best')
+        precision_recall_curve_path = "assets/precision_recall_curve.png"
+        plt.savefig(precision_recall_curve_path)
+        mlflow.log_artifact(precision_recall_curve_path)
+
+        metrics['auprc'] = auprc
 
         logging.info("Model evaluation completed.")
         return metrics
