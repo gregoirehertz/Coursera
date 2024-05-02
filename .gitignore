@@ -154,4 +154,3 @@ cython_debug/
 mlruns/
 /myenv
 data/creditcard.csv
-data/simulated_data
