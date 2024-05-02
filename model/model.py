@@ -24,12 +24,6 @@ def load_data(data_path):
     try:
         data = pd.read_csv(data_path)
         logging.info(f"Data loaded successfully from {data_path}")
-        
-        # Check if 'Class' column is present
-        if 'Class' not in data.columns:
-            logging.error("'Class' column not found in the dataset.")
-            sys.exit(1)
-        
         return data
     except Exception as e:
         logging.error(f"Error loading data: {e}")
@@ -67,11 +61,10 @@ def evaluate_model(model, X_test, y_test):
     y_pred_proba = model.predict_proba(X_test)[:, 1]
 
     # Compute metrics
-    metrics = {
-        'accuracy': accuracy_score(y_test, y_pred),
-        'roc_auc': roc_auc_score(y_test, y_pred_proba),
-        'classification_report': classification_report(y_test, y_pred)
-    }
+    metrics = {}
+    metrics['accuracy'] = accuracy_score(y_test, y_pred)
+    metrics['roc_auc'] = roc_auc_score(y_test, y_pred_proba)
+    metrics['classification_report'] = classification_report(y_test, y_pred)
 
     # Plot and save confusion matrix
     cm = confusion_matrix(y_test, y_pred)
@@ -115,20 +108,27 @@ if __name__ == '__main__':
     mlflow.set_experiment("fraud_detection")
 
     data_path = os.getenv('DATA_PATH', 'data/creditcard.csv')
+    simulated_data_path = os.getenv('SIMULATED_DATA_PATH', 'data/simulated_data.csv')
     model_save_path = os.getenv('MODEL_SAVE_PATH', 'model/saved_models/model.pkl')
 
-    data = load_data(data_path)
-    X, y = preprocess_data(data)
+    # Load the actual dataset
+    actual_data = load_data(data_path)
+    X_actual, y_actual = preprocess_data(actual_data)
+
+    # Load the simulated dataset
+    simulated_data = load_data(simulated_data_path)
+    X_simulated, y_simulated = preprocess_data(simulated_data)
 
     with mlflow.start_run():
-        model, X_test, y_test = train_model(X, y)
+        # Train the model on the actual data
+        model, _, _ = train_model(X_actual, y_actual)
 
         # Log model and parameters
         params = model.get_params()
         mlflow.log_params(params)
 
-        # Evaluate model on test set
-        metrics = evaluate_model(model, X_test, y_test)
+        # Evaluate model on simulated data
+        metrics = evaluate_model(model, X_simulated, y_simulated)
 
         # Log metrics
         mlflow.log_metric("accuracy", metrics['accuracy'])
@@ -143,30 +143,3 @@ if __name__ == '__main__':
 
         logging.info(f"Model training completed with accuracy: {metrics['accuracy']}, ROC AUC: {metrics['roc_auc']}, AUPRC: {metrics['auprc']}")
         logging.info(metrics['classification_report'])
-
-    # Model retraining and evaluation on simulated data
-    simulated_data_dir = 'data/simulated_data'
-    for filename in os.listdir(simulated_data_dir):
-        if filename.endswith('.pkl'):
-            file_path = os.path.join(simulated_data_dir, filename)
-            date = filename.split('.')[0]
-
-            with mlflow.start_run():
-                mlflow.log_param("data_date", date)
-
-                X_test, y_test = joblib.load(file_path)
-                metrics = evaluate_model(model, X_test, y_test)
-
-                mlflow.log_metric("test_accuracy", metrics['accuracy'])
-                mlflow.log_metric("test_roc_auc", metrics['roc_auc'])
-                mlflow.log_metric("test_auprc", metrics['auprc'])
-
-                logging.info(f"Model evaluation on {date} completed with accuracy: {metrics['accuracy']}, ROC AUC: {metrics['roc_auc']}, AUPRC: {metrics['auprc']}")
-
-                # If data drift detected, retrain the model
-                if metrics['accuracy'] < 0.95:
-                    logging.info("Data drift detected, retraining model...")
-                    X_train, y_train = preprocess_data(load_data(data_path))
-                    model, _, _ = train_model(X_train, y_train)
-                    save_model(model, model_save_path)
-                    logging.info("Model retrained and saved.")
