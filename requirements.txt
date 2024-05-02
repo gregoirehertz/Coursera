@@ -1,9 +1,9 @@
-pandas
+pandas==1.5.3
 numpy
 scikit-learn
 flask
 joblib
 mlflow
-imblearn
 seaborn
-evidently==0.2.8
+setuptools
+flask-httpauth

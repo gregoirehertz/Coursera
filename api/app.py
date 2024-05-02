@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
-import joblib
+import mlflow
 import pandas as pd
 import os
 import logging
+from mlflow.pyfunc import load_model
 
 app = Flask(__name__)
 
@@ -10,30 +11,21 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Environment variables and default values
-MODEL_DIR = os.getenv('MODEL_DIR', 'model/saved_models')
+MODEL_URI = os.getenv('MODEL_URI', 'models:/fraud_detection/Production')
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
-def load_model():
-    """Function to load the latest trained model."""
-    try:
-        model_files = sorted([f for f in os.listdir(MODEL_DIR) if f.endswith('.pkl')], reverse=True)
-        latest_model_file = model_files[0] if model_files else None
-        if latest_model_file:
-            model = joblib.load(os.path.join(MODEL_DIR, latest_model_file))
-            logging.info(f"Model {latest_model_file} loaded successfully.")
-            return model
-        else:
-            logging.error("No model file found.")
-            return None
-    except Exception as e:
-        logging.error(f"Error loading model: {e}")
-        return None
+# Load the model
+try:
+    model = load_model(MODEL_URI)
+    logging.info("Model loaded successfully.")
+except Exception as e:
+    logging.error(f"Error loading model: {e}")
+    model = None
 
 @app.route('/predict', methods=['POST'])
 def predict():
     """Endpoint to make fraud detection predictions."""
-    model = load_model()
     if not model:
         return jsonify({'error': 'Model not loaded'}), 500
 
@@ -42,38 +34,27 @@ def predict():
         return jsonify({'error': 'No data provided'}), 400
 
     try:
+        # Input validation
+        required_fields = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10',
+                           'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20',
+                           'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
+
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields in input data'}), 400
+
         df = pd.DataFrame([data])
-        prediction = model.predict_proba(df)[0][1]  # Probability of class 1 (fraud)
+        prediction = model.predict(df)[0]  # Probability of class 1 (fraud)
         logging.info(f"Prediction: {prediction}")
-        isfraud = prediction > 0.5
+        is_fraud = prediction > 0.5
+
         # Log prediction and input data for monitoring
-        logging.info(f"Input data: {df.to_dict(orient='records')}")
-        logging.info(f"Predicted probability of fraud: {prediction}")
-        return jsonify({'isfraud': bool(isfraud), 'probability': float(prediction) }), 200
+        logging.info(f"Input data: {data}")
+        logging.info(f"Prediction: {prediction}, Is Fraud: {is_fraud}")
+
+        return jsonify({'prediction': prediction, 'is_fraud': is_fraud})
     except Exception as e:
-        logging.error(f"Prediction error: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/upload_model', methods=['POST'])
-def upload_model():
-    """Endpoint to upload a model to the server."""
-    file = request.files['file']
-    if not file:
-        return jsonify({'error': 'No file provided'}), 400
-
-    file_path = os.path.join(MODEL_DIR, file.filename)
-    file.save(file_path)
-    logging.info(f"Model {file.filename} uploaded successfully.")
-    return jsonify({'message': 'Model uploaded successfully'}), 200
-
-@app.route('/')
-def home():
-    """Home endpoint providing welcome message and usage information."""
-    return '''
-    Welcome to the Fraud Detection API!<br>
-    Use /predict to make predictions.<br>
-    Use /upload_model to upload new models.<br>
-    '''
+        logging.error(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred during prediction'}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=DEBUG_MODE, port=int(SERVER_PORT))
+    app.run(host='0.0.0.0', port=int(SERVER_PORT), debug=DEBUG_MODE)

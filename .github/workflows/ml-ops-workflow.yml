@@ -1,57 +1,67 @@
-name: MLOps Workflow
+name: Fraud Detection CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   schedule:
-    - cron: '0 0 1 * *'  # At 00:00 on the first day of every month
-
-
-env:
-  IMAGE_NAME: frauddetector
-  REGISTRY: mohamadolouki
+    - cron: '0 0 1 * *'  # Run monthly on the 1st day of the month
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted
+
+  build:
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Train and evaluate model
+      env:
+        DATA_PATH: ${{ github.workspace }}/data/creditcard.csv
+        MODEL_SAVE_PATH: ${{ github.workspace }}/model/saved_models/model.pkl
+      run: |
+        python model/model.py
+    - name: Upload model artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts
+        path: |
+          model/saved_models/model.pkl
+          mlruns/
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
 
-      - name: Cache Python Dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Deploy to Server
-        run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker stop myapp || true
-          docker rm myapp || true
-          docker run -d --name myapp -p 8080:8000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Send Notification
-        run: echo "Workflow completed for version ${{ github.sha }}"
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Download model artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: model-artifacts
+        path: .
+    - name: Build Docker image
+      run: docker build -t fraud-detection-app .
+    - name: Deploy to VPS
+      env:
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+      run: |
+        docker save fraud-detection-app | bzip2 | ssh $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
+        ssh $VPS_USER@$VPS_HOST 'docker run -d --rm --name fraud-detection-app -p 8000:8000 fraud-detection-app'
