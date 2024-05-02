@@ -1,11 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import mlflow
 import pandas as pd
 import os
 import logging
 from mlflow.pyfunc import load_model
+from flask_basicauth import BasicAuth
 
 app = Flask(__name__)
+app.config['BASIC_AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME', 'admin')
+app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD', 'password')
+
+basic_auth = BasicAuth(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,13 +28,19 @@ except Exception as e:
     logging.error(f"Error loading model: {e}")
     model = None
 
+@app.route('/')
+@basic_auth.required
+def index():
+    return render_template('index.html')
+
 @app.route('/predict', methods=['POST'])
+@basic_auth.required
 def predict():
     """Endpoint to make fraud detection predictions."""
     if not model:
         return jsonify({'error': 'Model not loaded'}), 500
 
-    data = request.get_json()
+    data = request.form.to_dict()
     if not data:
         return jsonify({'error': 'No data provided'}), 400
 

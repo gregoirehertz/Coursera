@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fraud Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        input[type=text], input[type=number] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fraud Detection</h1>
+    <form>
+        <label for="Time">Time</label>
+        <input type="number" id="Time" name="Time" required>
+
+        <label for="V1">V1</label>
+        <input type="text" id="V1" name="V1" required>
+
+        <label for="V2">V2</label>
+        <input type="text" id="V2" name="V2" required>
+
+        <!-- Add input fields for other features -->
+
+        <button type="button" onclick="predict()">Predict</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        function predict() {
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').textContent = `Error: ${data.error}`;
+                } else {
+                    const prediction = data.prediction;
+                    const isFraud = data.is_fraud;
+                    document.getElementById('result').textContent = `Prediction: ${prediction}, Is Fraud: ${isFraud}`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = `Error: ${error}`;
+            });
+        }
+    </script>
+</body>
+</html>

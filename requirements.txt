@@ -7,3 +7,4 @@ mlflow
 seaborn
 setuptools
 flask-httpauth
+Flask-BasicAuth

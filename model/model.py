@@ -22,7 +22,7 @@ def load_data(data_path):
     Load data from a given path.
     """
     try:
-        data = pd.read_csv(data_path)
+        data = pd.read_csv(data_path, nrows=5)  # Load a few rows for testing
         logging.info(f"Data loaded successfully from {data_path}")
         return data
     except Exception as e:
