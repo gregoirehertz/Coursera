@@ -44,22 +44,12 @@ To install the Fraud Detection Application, follow these steps:
    ```
 
 
-## Training the Model
+## Training and Evaluating the Model and 
 
 To train the model, run:
 
 ```
-python /model/train_model.py
-```
-
-This script will train the model and save it to the specified path.
-
-## Evaluating the Model
-
-To evaluate the trained model, run:
-
-```
-python /model/model_evaluation.py
+python /model/model.py
 ```
 
 This will load the test data and the trained model, then output evaluation metrics.
@@ -79,7 +69,7 @@ To run the application locally:
 ## Running the Application
 1. **Train the model**:
    ```
-   python model/train_model.py
+   python model/model.py
    ```
 2. **Start the Flask API**:
    ```
